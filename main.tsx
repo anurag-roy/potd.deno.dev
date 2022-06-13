@@ -5,7 +5,7 @@ import seedrandom from "https://esm.sh/v86/seedrandom@3.0.5/es2022/seedrandom.mi
 
 const NUMBER_OF_POKEMON = 898;
 
-const todaysDate = Date.now();
+const todaysDate = new Date().toDateString();
 const rng = new seedrandom(todaysDate);
 const pokemonNumber = Math.round(rng() * NUMBER_OF_POKEMON);
 
@@ -20,7 +20,7 @@ const handler = (req: Request) => html({
       style={{backgroundColor: pokemon.color}}
     >
       <img src={pokemon.imageUrl} />
-      <h1 class="text-4xl font-bold">{pokemon.name} {todaysDate}</h1>
+      <h1 class="text-4xl font-bold">{pokemon.name}</h1>
       <footer class="fixed bottom-8 w-full h-6 flex items-center justify-center gap-2 text-gray-800">
         Powered by
         <a
