@@ -1,39 +1,56 @@
 /** @jsx h */
-import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
-import { h, html } from "https://deno.land/x/htm@0.0.2/mod.tsx";
-import seedrandom from "https://esm.sh/v86/seedrandom@3.0.5/es2022/seedrandom.min.js";
+import { serve } from 'https://deno.land/std@0.155.0/http/server.ts';
+import { h, html } from 'https://deno.land/x/htm@0.0.10/mod.tsx';
+import { UnoCSS } from 'https://deno.land/x/htm@0.0.10/plugins.ts';
 
-const NUMBER_OF_POKEMON = 898;
+// enable UnoCSS
+html.use(UnoCSS());
 
 const handler = async (req: Request) => {
-  const todaysDate = new Date().toDateString();
-  const rng = new seedrandom(todaysDate);
-  const pokemonNumber = Math.round(rng() * NUMBER_OF_POKEMON);
-
-  const res = await fetch(`https://pokeapi.deno.dev/pokemon/${pokemonNumber}`);
+  const url = new URL(req.url);
+  const pool = url.searchParams.get('pool');
+  const res = await fetch(`https://pokeapi.deno.dev/pokemon/potd?pool=${pool}`);
   const pokemon = await res.json();
 
   return html({
-    title: `POTD - Pokémon of the Day`,
+    meta: {
+      description: 'Pokémon of the Day',
+      'theme-color': pokemon.color,
+    },
+    links: [
+      {
+        href: 'https://pokeapi.deno.dev/assets/logo/logo.webp',
+        rel: 'icon',
+      },
+    ],
+    title: `Pokémon of the Day - ${pokemon.name}`,
+    styles: ['html { height: 100%; }'],
     body: (
-      <div
-        class="flex flex-col items-center justify-center w-full h-screen"
+      <body
+        class="w-full h-full flex flex-col items-center"
         style={{ backgroundColor: pokemon.color }}
       >
-        <img src={pokemon.imageUrl} height="475px" width="475px" />
-        <h1 class="text-4xl font-bold">{pokemon.name}</h1>
-        <footer class="fixed bottom-8 w-full h-6 flex items-center justify-center gap-2 text-gray-800">
+        <main class="grow flex flex-col justify-center mt-10">
+          <img src={pokemon.imageUrl} alt={pokemon.name} class="w-100 h-100" />
+          <h1 class="text-4xl font-bold text-center py-4">{pokemon.name}</h1>
+        </main>
+        <footer class="p-2 flex items-center justify-center gap-2 text-gray-800">
           Powered by
           <a
             class="flex items-center gap-2 text-sm text-black font-semibold"
             href="https://pokeapi.deno.dev/"
           >
-            <img alt="Poké API" src="https://pokeapi.deno.dev/assets/logo/logo.webp" class="w-5" /> Poké API
+            <img
+              alt="Poké API"
+              src="https://pokeapi.deno.dev/assets/logo/logo.webp"
+              class="w-5"
+            />{' '}
+            Poké API
           </a>
         </footer>
-      </div>
+      </body>
     ),
-  })
+  });
 };
 
 await serve(handler);
